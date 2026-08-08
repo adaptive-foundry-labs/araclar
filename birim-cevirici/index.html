@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Birim Çevirici — Uzunluk / Ağırlık / Hacim</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .calculator {
+            width: 100%;
+            max-width: 480px;
+            background-color: #2d2d2d;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            padding: 24px;
+        }
+
+        .calculator h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            text-align: center;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #b0b0b0;
+            margin-bottom: 8px;
+        }
+
+        select,
+        input {
+            width: 100%;
+            padding: 12px 14px;
+            background-color: #3a3a3a;
+            border: 1px solid #4a4a4a;
+            border-radius: 6px;
+            color: #e0e0e0;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.2s ease;
+        }
+
+        select:hover,
+        input:hover {
+            border-color: #5a5a5a;
+        }
+
+        select:focus,
+        input:focus {
+            outline: none;
+            border-color: #ff6b35;
+            box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.1);
+        }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="8" viewBox="0 0 12 8"><path fill="%23e0e0e0" d="M1 1l5 5 5-5"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 36px;
+        }
+
+        .display {
+            background-color: #252525;
+            border: 1px solid #3a3a3a;
+            border-radius: 8px;
+            padding: 16px 14px;
+            margin-bottom: 20px;
+            min-height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .display-label {
+            font-size: 11px;
+            color: #888888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .display-value {
+            font-size: 20px;
+            font-weight: 500;
+            color: #ff6b35;
+            letter-spacing: -0.3px;
+            word-break: break-all;
+            text-align: right;
+            flex: 1;
+            margin-left: 12px;
+        }
+
+        .error-message {
+            display: none;
+            background-color: rgba(220, 53, 69, 0.15);
+            border: 1px solid #dc3545;
+            border-radius: 6px;
+            padding: 12px 14px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            color: #ff6b7a;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .button {
+            width: 100%;
+            padding: 12px 16px;
+            background-color: #ff6b35;
+            border: none;
+            border-radius: 6px;
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .button:hover {
+            background-color: #e55a24;
+        }
+
+        .button:active {
+            background-color: #d04a14;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .two-column .form-group {
+            margin-bottom: 0;
+        }
+
+        .info-text {
+            font-size: 11px;
+            color: #808080;
+            text-align: center;
+            margin-top: 16px;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <h1>Birim Çevirici</h1>
+
+        <div class="error-message" id="errorMessage"></div>
+
+        <div class="form-group">
+            <label for="categorySelect">Kategori</label>
+            <select id="categorySelect">
+                <option value="length">Uzunluk</option>
+                <option value="weight">Ağırlık</option>
+                <option value="volume">Hacim</option>
+            </select>
+        </div>
+
+        <div class="two-column">
+            <div class="form-group">
+                <label for="fromUnitSelect">Kaynak Birim</label>
+                <select id="fromUnitSelect"></select>
+            </div>
+            <div class="form-group">
+                <label for="toUnitSelect">Hedef Birim</label>
+                <select id="toUnitSelect"></select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="inputValue">Giriş Değeri</label>
+            <input type="number" id="inputValue" placeholder="0" step="any">
+        </div>
+
+        <div class="display">
+            <div>
+                <div class="display-label">Sonuç</div>
+            </div>
+            <div class="display-value" id="outputValue">0.0000</div>
+        </div>
+
+        <button class="button" id="convertButton">Çevir</button>
+        <p class="info-text">Otomatik çevirme için değer girdikten sonra Enter tuşuna basın.</p>
+    </div>
+
+    <script>
+        // Dönüşüm faktörleri — her kategori için referans birim cinsinden
+        const conversionFactors = {
+            length: {
+                mm: 1,
+                cm: 10,
+                m: 1000,
+                km: 1000000,
+                inch: 25.4,
+                foot: 304.8,
+                yard: 914.4,
+                mile: 1609344
+            },
+            weight: {
+                mg: 1,
+                g: 1000,
+                kg: 1000000,
+                oz: 28349.5,
+                lb: 453592,
+                ton: 1000000000
+            },
+            volume: {
+                ml: 1,
+                l: 1000,
+                m3: 1000000,
+                fl_oz: 29.5735,
+                pint: 473.176,
+                gallon: 3785.41
+            }
+        };
+
+        // Kategori etiketleri
+        const categoryLabels = {
+            length: 'Uzunluk',
+            weight: 'Ağırlık',
+            volume: 'Hacim'
+        };
+
+        // Birim etiketleri
+        const unitLabels = {
+            length: { mm: 'Milimetre', cm: 'Santimetre', m: 'Metre', km: 'Kilometre', inch: 'İnç', foot: 'Foot', yard: 'Yard', mile: 'Mil' },
+            weight: { mg: 'Miligram', g: 'Gram', kg: 'Kilogram', oz: 'Ons', lb: 'Pound', ton: 'Ton' },
+            volume: { ml: 'Mililitre', l: 'Litre', m3: 'Metreküp', fl_oz: 'FL OZ', pint: 'Pint', gallon: 'Galon' }
+        };
+
+        const categorySelect = document.getElementById('categorySelect');
+        const fromUnitSelect = document.getElementById('fromUnitSelect');
+        const toUnitSelect = document.getElementById('toUnitSelect');
+        const inputValue = document.getElementById('inputValue');
+        const outputValue = document.getElementById('outputValue');
+        const convertButton = document.getElementById('convertButton');
+        const errorMessage = document.getElementById('errorMessage');
+
+        // Kategori değiştiğinde birimleri güncelle
+        categorySelect.addEventListener('change', updateUnits);
+        convertButton.addEventListener('click', performConversion);
+        inputValue.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') performConversion();
+        });
+
+        function updateUnits() {
+            const category = categorySelect.value;
+            const units = Object.keys(conversionFactors[category]);
+            const labels = unitLabels[category];
+
+            fromUnitSelect.innerHTML = '';
+            toUnitSelect.innerHTML = '';
+
+            units.forEach((unit, index) => {
+                const option1 = document.createElement('option');
+                option1.value = unit;
+                option1.textContent = labels[unit];
+                fromUnitSelect.appendChild(option1);
+
+                const option2 = document.createElement('option');
+                option2.value = unit;
+                option2.textContent = labels[unit];
+                if (index === 1) option2.selected = true; // İkinci birim seçili
+                toUnitSelect.appendChild(option2);
+            });
+        }
+
+        function performConversion() {
+            const category = categorySelect.value;
+            const fromUnit = fromUnitSelect.value;
+            const toUnit = toUnitSelect.value;
+            const value = parseFloat(inputValue.value);
+
+            // Hata kontrolü
+            if (isNaN(value) || value === '') {
+                showError('Lütfen geçerli bir sayı giriniz.');
+                outputValue.textContent = '0.0000';
+                return;
+            }
+
+            if (value < 0) {
+                showError('Negatif değer giremezsiniz.');
+                outputValue.textContent = '0.0000';
+                return;
+            }
+
+            // Dönüşüm hesapla
+            const fromFactor = conversionFactors[category][fromUnit];
+            const toFactor = conversionFactors[category][toUnit];
+            const result = (value * fromFactor) / toFactor;
+
+            // 4 ondalık formatla
+            outputValue.textContent = result.toFixed(4);
+            hideError();
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.add('show');
+        }
+
+        function hideError() {
+            errorMessage.classList.remove('show');
+        }
+
+        // İlk yüklemede birimleri başlat
+        updateUnits();
+    </script>
+</body>
+</html>

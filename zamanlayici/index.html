@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Geri Sayim Zamanlayicisi</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main class="container" id="app">
+  <h1>Geri Sayim Zamanlayicisi</h1>
+
+  <div class="inputs" id="inputs">
+    <label>
+      Dakika
+      <input type="number" id="minutes-input" min="0" max="999" value="0" inputmode="numeric">
+    </label>
+    <label>
+      Saniye
+      <input type="number" id="seconds-input" min="0" max="59" value="0" inputmode="numeric">
+    </label>
+  </div>
+
+  <div class="display" id="display" aria-live="polite">00:00</div>
+
+  <p class="error-msg" id="error-msg" hidden>Gecerli bir sure girin (0'dan buyuk, saniye 0-59 arasi).</p>
+
+  <div class="controls">
+    <button id="start-btn" type="button">Basla</button>
+    <button id="pause-btn" type="button" disabled>Duraklat</button>
+    <button id="reset-btn" type="button">Sifirla</button>
+  </div>
+
+  <p class="status" id="status-text">Durum: Bekliyor</p>
+</main>
+
+<script src="timer.js"></script>
+</body>
+</html>

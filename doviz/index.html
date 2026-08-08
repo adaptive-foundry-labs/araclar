@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hesap Makinesi v2 - Doviz</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg,#1e1e2f,#2b2b45);
+    font-family: 'Segoe UI', Arial, sans-serif;
+  }
+  .calculator {
+    width: 320px;
+    background: #24243a;
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  }
+  .display {
+    background: #14141f;
+    border-radius: 10px;
+    padding: 20px 16px;
+    margin-bottom: 14px;
+    text-align: right;
+    color: #fff;
+    min-height: 76px;
+  }
+  .display .expr {
+    font-size: 14px;
+    color: #9a9ac0;
+    min-height: 18px;
+    word-break: break-all;
+  }
+  .display .current {
+    font-size: 32px;
+    font-weight: 600;
+    word-break: break-all;
+  }
+  .display .currency-row {
+    font-size: 12px;
+    color: #7a7a9e;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #35355a;
+    word-break: break-all;
+  }
+  .display .rate-timestamp {
+    font-size: 10px;
+    color: #5a5a7a;
+    margin-top: 4px;
+  }
+  .buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  button {
+    border: none;
+    border-radius: 10px;
+    padding: 18px 0;
+    font-size: 18px;
+    cursor: pointer;
+    color: #fff;
+    background: #35355a;
+    transition: transform 0.05s ease, background 0.15s ease;
+  }
+  button:hover { background: #40406b; }
+  button:active { transform: scale(0.96); }
+  button.op { background: #4a4a7a; }
+  button.op:hover { background: #57579091; }
+  button.equal { background: #ff9f43; }
+  button.equal:hover { background: #ffb266; }
+  button.clear { background: #e74c3c; }
+  button.clear:hover { background: #ff6a5a; }
+  button.wide { grid-column: span 2; }
+  button.error-shake { animation: shake 0.3s; }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
+  }
+</style>
+</head>
+<body>
+<div class="calculator">
+  <div class="display">
+    <div class="expr" id="expr"></div>
+    <div class="current" id="current">0</div>
+    <div class="currency-row">
+      <div id="usd-value">USD: -</div>
+      <div id="eur-value">EUR: -</div>
+    </div>
+    <div class="rate-timestamp" id="rate-timestamp">Kurlar 08.08.2026 tarihinde gunceldir</div>
+  </div>
+  <div class="buttons">
+    <button class="clear" data-action="clear">C</button>
+    <button data-action="sign">+/-</button>
+    <button data-action="percent">%</button>
+    <button class="op" data-action="divide">÷</button>
+
+    <button data-digit="7">7</button>
+    <button data-digit="8">8</button>
+    <button data-digit="9">9</button>
+    <button class="op" data-action="multiply">×</button>
+
+    <button data-digit="4">4</button>
+    <button data-digit="5">5</button>
+    <button data-digit="6">6</button>
+    <button class="op" data-action="subtract">−</button>
+
+    <button data-digit="1">1</button>
+    <button data-digit="2">2</button>
+    <button data-digit="3">3</button>
+    <button class="op" data-action="add">+</button>
+
+    <button class="wide" data-digit="0">0</button>
+    <button data-action="decimal">.</button>
+    <button class="equal" data-action="equals">=</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // STATIK KURLAR - Sabit veri olarak koada gomulu (Degisiklik = yeni surum)
+  var RATES = {
+    USD: 1.0,
+    EUR: 0.92
+  };
+  var RATE_DATE = '08.08.2026';
+
+  var state = {
+    currentValue: '0',
+    previousValue: null,
+    operator: null,
+    overwrite: true,
+    error: false
+  };
+
+  var currentEl = document.getElementById('current');
+  var exprEl = document.getElementById('expr');
+  var usdValueEl = document.getElementById('usd-value');
+  var eurValueEl = document.getElementById('eur-value');
+  var rateTimestampEl = document.getElementById('rate-timestamp');
+
+  var OP_SYMBOLS = {
+    add: '+',
+    subtract: '−',
+    multiply: '×',
+    divide: '÷'
+  };
+
+  function formatNumber(numStr) {
+    if (numStr === '' || numStr === '-') return numStr;
+    var num = Number(numStr);
+    if (!isFinite(num)) return 'Hata';
+    var str = String(num);
+    if (str.length > 14) {
+      str = num.toPrecision(10);
+      str = Number(str).toString();
+    }
+    return str;
+  }
+
+  function updateCurrencyDisplay() {
+    var val = parseFloat(state.currentValue);
+    if (isNaN(val) || !isFinite(val)) {
+      usdValueEl.textContent = 'USD: -';
+      eurValueEl.textContent = 'EUR: -';
+      return;
+    }
+    var usdAmount = val * RATES.USD;
+    var eurAmount = val * RATES.EUR;
+    usdValueEl.textContent = 'USD: ' + formatNumber(String(usdAmount));
+    eurValueEl.textContent = 'EUR: ' + formatNumber(String(eurAmount));
+  }
+
+  function updateDisplay() {
+    currentEl.textContent = state.error ? 'Hata' : formatNumber(state.currentValue);
+    if (state.error) {
+      exprEl.textContent = '';
+      usdValueEl.textContent = 'USD: -';
+      eurValueEl.textContent = 'EUR: -';
+      return;
+    }
+    if (state.operator && state.previousValue !== null) {
+      exprEl.textContent = formatNumber(state.previousValue) + ' ' + OP_SYMBOLS[state.operator];
+    } else {
+      exprEl.textContent = '';
+    }
+    updateCurrencyDisplay();
+    rateTimestampEl.textContent = 'Kurlar ' + RATE_DATE + ' tarihinde gunceldir';
+  }
+
+  function triggerErrorAnim() {
+    var disp = document.querySelector('.display');
+    disp.classList.remove('error-shake');
+    void disp.offsetWidth;
+    disp.classList.add('error-shake');
+  }
+
+  function resetAll() {
+    state.currentValue = '0';
+    state.previousValue = null;
+    state.operator = null;
+    state.overwrite = true;
+    state.error = false;
+  }
+
+  function inputDigit(d) {
+    if (state.error) { resetAll(); }
+    if (state.overwrite) {
+      state.currentValue = (d === '0') ? '0' : d;
+      state.overwrite = false;
+    } else {
+      if (state.currentValue === '0') {
+        state.currentValue = d;
+      } else {
+        if (state.currentValue.replace('-', '').length >= 15) return;
+        state.currentValue += d;
+      }
+    }
+  }
+
+  function inputDecimal() {
+    if (state.error) { resetAll(); }
+    if (state.overwrite) {
+      state.currentValue = '0.';
+      state.overwrite = false;
+      return;
+    }
+    if (state.currentValue.indexOf('.') === -1) {
+      state.currentValue += '.';
+    }
+  }
+
+  function toggleSign() {
+    if (state.error) return;
+    if (state.currentValue === '0') return;
+    if (state.currentValue.charAt(0) === '-') {
+      state.currentValue = state.currentValue.slice(1);
+    } else {
+      state.currentValue = '-' + state.currentValue;
+    }
+  }
+
+  function applyPercent() {
+    if (state.error) return;
+    var val = parseFloat(state.currentValue);
+    if (isNaN(val)) return;
+    var result;
+    if (state.operator && state.previousValue !== null) {
+      var base = parseFloat(state.previousValue);
+      result = (base * val) / 100;
+    } else {
+      result = val / 100;
+    }
+    state.currentValue = String(result);
+    state.overwrite = true;
+  }
+
+  function compute(a, b, op) {
+    a = parseFloat(a);
+    b = parseFloat(b);
+    switch (op) {
+      case 'add': return a + b;
+      case 'subtract': return a - b;
+      case 'multiply': return a * b;
+      case 'divide':
+        if (b === 0) return null;
+        return a / b;
+      default: return b;
+    }
+  }
+
+  function chooseOperator(op) {
+    if (state.error) return;
+    if (state.operator && !state.overwrite) {
+      var result = compute(state.previousValue, state.currentValue, state.operator);
+      if (result === null) {
+        setError();
+        return;
+      }
+      state.previousValue = String(result);
+      state.currentValue = String(result);
+    } else {
+      state.previousValue = state.currentValue;
+    }
+    state.operator = op;
+    state.overwrite = true;
+  }
+
+  function setError() {
+    state.error = true;
+    state.currentValue = 'Hata';
+    state.previousValue = null;
+    state.operator = null;
+    state.overwrite = true;
+    triggerErrorAnim();
+  }
+
+  function equals() {
+    if (state.error) return;
+    if (state.operator === null || state.previousValue === null) return;
+    var result = compute(state.previousValue, state.currentValue, state.operator);
+    if (result === null) {
+      setError();
+      return;
+    }
+    state.currentValue = String(result);
+    state.previousValue = null;
+    state.operator = null;
+    state.overwrite = true;
+  }
+
+  function handleAction(action) {
+    switch (action) {
+      case 'clear': resetAll(); break;
+      case 'sign': toggleSign(); break;
+      case 'percent': applyPercent(); break;
+      case 'add':
+      case 'subtract':
+      case 'multiply':
+      case 'divide': chooseOperator(action); break;
+      case 'decimal': inputDecimal(); break;
+      case 'equals': equals(); break;
+    }
+    updateDisplay();
+  }
+
+  document.querySelectorAll('button[data-digit]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      if (state.error) resetAll();
+      inputDigit(btn.getAttribute('data-digit'));
+      updateDisplay();
+    });
+  });
+
+  document.querySelectorAll('button[data-action]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      handleAction(btn.getAttribute('data-action'));
+    });
+  });
+
+  document.addEventListener('keydown', function (e) {
+    var key = e.key;
+    if (key >= '0' && key <= '9') {
+      if (state.error) resetAll();
+      inputDigit(key);
+      updateDisplay();
+      return;
+    }
+    switch (key) {
+      case '.':
+      case ',':
+        inputDecimal();
+        updateDisplay();
+        break;
+      case '+':
+        handleAction('add');
+        break;
+      case '-':
+        handleAction('subtract');
+        break;
+      case '*':
+        handleAction('multiply');
+        break;
+      case '/':
+        e.preventDefault();
+        handleAction('divide');
+        break;
+      case '%':
+        handleAction('percent');
+        break;
+      case 'Enter':
+      case '=':
+        e.preventDefault();
+        handleAction('equals');
+        break;
+      case 'Escape':
+        handleAction('clear');
+        break;
+      case 'Backspace':
+        if (state.error) { resetAll(); updateDisplay(); break; }
+        if (!state.overwrite && state.currentValue.length > 1) {
+          state.currentValue = state.currentValue.slice(0, -1);
+          if (state.currentValue === '-' || state.currentValue === '') {
+            state.currentValue = '0';
+            state.overwrite = true;
+          }
+        } else {
+          state.currentValue = '0';
+          state.overwrite = true;
+        }
+        updateDisplay();
+        break;
+      default:
+        break;
+    }
+  });
+
+  updateDisplay();
+})();
+</script>
+</body>
+</html>

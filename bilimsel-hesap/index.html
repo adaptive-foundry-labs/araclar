@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bilimsel Hesap Makinesi</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="calculator-container">
+        <div class="display-area">
+            <input type="text" id="display" class="display" readonly placeholder="0">
+            <div id="error-message" class="error-message"></div>
+        </div>
+        
+        <div class="buttons-grid">
+            <!-- Sayi Tuslari -->
+            <button class="button number" data-value="7">7</button>
+            <button class="button number" data-value="8">8</button>
+            <button class="button number" data-value="9">9</button>
+            <button class="button operator" data-op="/">÷</button>
+            <button class="button clear" id="clear-btn">C</button>
+            
+            <button class="button number" data-value="4">4</button>
+            <button class="button number" data-value="5">5</button>
+            <button class="button number" data-value="6">6</button>
+            <button class="button operator" data-op="*">×</button>
+            <button class="button scientific" id="sqrt-btn">√</button>
+            
+            <button class="button number" data-value="1">1</button>
+            <button class="button number" data-value="2">2</button>
+            <button class="button number" data-value="3">3</button>
+            <button class="button operator" data-op="-">−</button>
+            <button class="button scientific" id="square-btn">x²</button>
+            
+            <button class="button number" data-value="0">0</button>
+            <button class="button number" data-value=".">.</button>
+            <button class="button equals" id="equals-btn">=</button>
+            <button class="button operator" data-op="+">+</button>
+            <button class="button scientific" id="reciprocal-btn">1/x</button>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>

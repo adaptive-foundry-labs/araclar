@@ -1,0 +1,106 @@
+:root {
+  --primary-color: #FF9500;
+  --bg-dark: #1C1C1E;
+  --text-light: #FFFFFF;
+  --btn-dark: #333333;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--bg-dark);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.calculator {
+  background-color: var(--bg-dark);
+  border-radius: 30px;
+  padding: 20px;
+  width: 100%;
+  max-width: 320px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.display {
+  background-color: var(--bg-dark);
+  border-radius: 15px;
+  padding: 20px;
+  margin-bottom: 20px;
+  text-align: right;
+}
+
+.output {
+  font-size: 56px;
+  font-weight: 300;
+  color: var(--text-light);
+  word-wrap: break-word;
+  word-break: break-all;
+  min-height: 70px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+}
+
+.buttons {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.btn {
+  aspect-ratio: 1;
+  border: none;
+  border-radius: 50%;
+  font-size: 24px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--text-light);
+  background-color: var(--btn-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn:active {
+  transform: scale(0.95);
+  opacity: 0.8;
+}
+
+.btn:hover {
+  opacity: 0.9;
+}
+
+.btn.num {
+  background-color: var(--btn-dark);
+  color: var(--text-light);
+}
+
+.btn.op {
+  background-color: var(--primary-color);
+  color: #000000;
+}
+
+.btn.ac {
+  background-color: var(--btn-dark);
+  color: var(--text-light);
+  font-size: 18px;
+}
+
+.btn.equals {
+  background-color: var(--primary-color);
+  color: #000000;
+}
+
+.btn.zero {
+  grid-column: span 2;
+}
