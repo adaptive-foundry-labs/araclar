@@ -21,15 +21,42 @@
     border-radius: 16px;
     padding: 16px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    position: relative;
   }
+  .mute-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 8px;
+    background: #35355a;
+    color: #fff;
+    font-size: 18px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+  .mute-btn:hover { background: #40406b; }
   .display {
     background: #14141f;
     border-radius: 10px;
     padding: 20px 16px;
     margin-bottom: 14px;
+    margin-top: 8px;
     text-align: right;
     color: #fff;
     min-height: 76px;
+  }
+  .display .intermediate {
+    font-size: 14px;
+    color: #9a9ac0;
+    min-height: 18px;
+    word-break: break-all;
   }
   .display .expr {
     font-size: 14px;
@@ -76,7 +103,9 @@
 </head>
 <body>
 <div class="calculator">
+  <button class="mute-btn" id="mute-btn" title="Sesi Aç/Kapat">🔊</button>
   <div class="display">
+    <div class="intermediate" id="intermediate"></div>
     <div class="expr" id="expr"></div>
     <div class="current" id="current">0</div>
   </div>
@@ -119,8 +148,12 @@
     error: false
   };
 
+  var audioContext = null;
+  var isMuted = localStorage.getItem('hm-mute') === 'true';
+  var muteBtn = document.getElementById('mute-btn');
   var currentEl = document.getElementById('current');
   var exprEl = document.getElementById('expr');
+  var intermediateEl = document.getElementById('intermediate');
 
   var OP_SYMBOLS = {
     add: '+',
@@ -128,6 +161,41 @@
     multiply: '×',
     divide: '÷'
   };
+
+  function updateMuteButton() {
+    muteBtn.textContent = isMuted ? '🔇' : '🔊';
+  }
+
+  function initAudioContext() {
+    if (audioContext) return;
+    var CtxClass = window.AudioContext || window.webkitAudioContext;
+    if (CtxClass) {
+      audioContext = new CtxClass();
+    }
+  }
+
+  function playClickSound() {
+    if (isMuted || !audioContext) return;
+    try {
+      var now = audioContext.currentTime;
+      var osc = audioContext.createOscillator();
+      var gain = audioContext.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = 800;
+      osc.connect(gain);
+      gain.connect(audioContext.destination);
+      gain.gain.setValueAtTime(0.1, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+      osc.start(now);
+      osc.stop(now + 0.08);
+    } catch (e) {}
+  }
+
+  muteBtn.addEventListener('click', function () {
+    isMuted = !isMuted;
+    localStorage.setItem('hm-mute', isMuted);
+    updateMuteButton();
+  });
 
   function formatNumber(numStr) {
     if (numStr === '' || numStr === '-') return numStr;
@@ -145,12 +213,28 @@
     currentEl.textContent = state.error ? 'Hata' : formatNumber(state.currentValue);
     if (state.error) {
       exprEl.textContent = '';
+      intermediateEl.textContent = '';
       return;
     }
     if (state.operator && state.previousValue !== null) {
       exprEl.textContent = formatNumber(state.previousValue) + ' ' + OP_SYMBOLS[state.operator];
+      intermediateEl.textContent = '';
     } else {
       exprEl.textContent = '';
+      intermediateEl.textContent = '';
+    }
+  }
+
+  function updateIntermediateResult() {
+    if (!state.error && state.operator && state.previousValue !== null && !state.overwrite) {
+      var result = compute(state.previousValue, state.currentValue, state.operator);
+      if (result !== null) {
+        intermediateEl.textContent = '= ' + formatNumber(String(result));
+      } else {
+        intermediateEl.textContent = '';
+      }
+    } else {
+      intermediateEl.textContent = '';
     }
   }
 
@@ -250,6 +334,7 @@
     }
     state.operator = op;
     state.overwrite = true;
+    updateDisplay();
   }
 
   function setError() {
@@ -288,18 +373,24 @@
       case 'equals': equals(); break;
     }
     updateDisplay();
+    updateIntermediateResult();
   }
 
   document.querySelectorAll('button[data-digit]').forEach(function (btn) {
     btn.addEventListener('click', function () {
+      initAudioContext();
+      playClickSound();
       if (state.error) resetAll();
       inputDigit(btn.getAttribute('data-digit'));
       updateDisplay();
+      updateIntermediateResult();
     });
   });
 
   document.querySelectorAll('button[data-action]').forEach(function (btn) {
     btn.addEventListener('click', function () {
+      initAudioContext();
+      playClickSound();
       handleAction(btn.getAttribute('data-action'));
     });
   });
@@ -307,42 +398,64 @@
   document.addEventListener('keydown', function (e) {
     var key = e.key;
     if (key >= '0' && key <= '9') {
+      initAudioContext();
+      playClickSound();
       if (state.error) resetAll();
       inputDigit(key);
       updateDisplay();
+      updateIntermediateResult();
       return;
     }
     switch (key) {
       case '.':
       case ',':
+        initAudioContext();
+        playClickSound();
         inputDecimal();
         updateDisplay();
+        updateIntermediateResult();
         break;
       case '+':
+        initAudioContext();
+        playClickSound();
         handleAction('add');
         break;
       case '-':
+        initAudioContext();
+        playClickSound();
         handleAction('subtract');
         break;
       case '*':
+        initAudioContext();
+        playClickSound();
         handleAction('multiply');
         break;
       case '/':
         e.preventDefault();
+        initAudioContext();
+        playClickSound();
         handleAction('divide');
         break;
       case '%':
+        initAudioContext();
+        playClickSound();
         handleAction('percent');
         break;
       case 'Enter':
       case '=':
         e.preventDefault();
+        initAudioContext();
+        playClickSound();
         handleAction('equals');
         break;
       case 'Escape':
+        initAudioContext();
+        playClickSound();
         handleAction('clear');
         break;
       case 'Backspace':
+        initAudioContext();
+        playClickSound();
         if (state.error) { resetAll(); updateDisplay(); break; }
         if (!state.overwrite && state.currentValue.length > 1) {
           state.currentValue = state.currentValue.slice(0, -1);
@@ -355,12 +468,14 @@
           state.overwrite = true;
         }
         updateDisplay();
+        updateIntermediateResult();
         break;
       default:
         break;
     }
   });
 
+  updateMuteButton();
   updateDisplay();
 })();
 </script>
