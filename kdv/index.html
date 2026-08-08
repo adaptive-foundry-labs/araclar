@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KDV Dahil/Haric Hesaplama Aracı</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>KDV Hesaplama Aracı</h1>
+        
+        <div class="form-group">
+            <label for="amount">Tutar (₺):</label>
+            <input type="number" id="amount" placeholder="0.00" step="0.01" min="0">
+        </div>
+
+        <div class="form-group">
+            <label>KDV Oranı:</label>
+            <div class="radio-group">
+                <label><input type="radio" name="kdv-rate" value="0.01" checked> %1</label>
+                <label><input type="radio" name="kdv-rate" value="0.10"> %10</label>
+                <label><input type="radio" name="kdv-rate" value="0.20"> %20</label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Hesaplama Yönü:</label>
+            <div class="radio-group">
+                <label><input type="radio" name="direction" value="inclusive" checked> Fiyat KDV Dahil (Harice Çevir)</label>
+                <label><input type="radio" name="direction" value="exclusive"> Fiyat KDV Hariç (Dahile Çevir)</label>
+            </div>
+        </div>
+
+        <button onclick="calculate()">Hesapla</button>
+
+        <div id="result" class="result-box" style="display: none;">
+            <div class="result-item">
+                <span class="result-label">KDV Dahil Fiyat:</span>
+                <span class="result-value" id="result-inclusive">0.00 ₺</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">KDV Hariç Fiyat:</span>
+                <span class="result-value" id="result-exclusive">0.00 ₺</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">KDV Tutarı:</span>
+                <span class="result-value" id="result-kdv-amount">0.00 ₺</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">KDV Oranı:</span>
+                <span class="result-value" id="result-rate">%1</span>
+            </div>
+        </div>
+
+        <div id="error" class="error-box" style="display: none;"></div>
+    </div>
+
+    <script src="calc.js"></script>
+</body>
+</html>

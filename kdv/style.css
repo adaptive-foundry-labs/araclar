@@ -1,0 +1,205 @@
+/* KDV Dahil/Haric Fiyat Hesaplama Araci — Stil */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  padding: 40px;
+  max-width: 500px;
+  width: 100%;
+}
+
+h1 {
+  color: #333;
+  margin-bottom: 8px;
+  font-size: 24px;
+  text-align: center;
+}
+
+.subtitle {
+  color: #666;
+  text-align: center;
+  font-size: 13px;
+  margin-bottom: 30px;
+}
+
+.form-group {
+  margin-bottom: 24px;
+}
+
+label {
+  display: block;
+  color: #333;
+  font-weight: 600;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+input[type="number"] {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 16px;
+  transition: border-color 0.3s;
+}
+
+input[type="number"]:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.radio-group,
+.radio-group-inline {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.radio-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+input[type="radio"] {
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+  accent-color: #667eea;
+}
+
+.radio-item label,
+.radio-group label {
+  margin-bottom: 0;
+  font-weight: normal;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.direction-group {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.direction-group label {
+  margin-bottom: 0;
+  font-weight: normal;
+  cursor: pointer;
+}
+
+.btn-group {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+button {
+  flex: 1;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  background: #667eea;
+  color: white;
+}
+
+button:hover {
+  background: #5568d3;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+.result-box {
+  margin-top: 32px;
+  padding: 20px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  border-left: 4px solid #667eea;
+}
+
+.result-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.result-item:last-child {
+  margin-bottom: 0;
+}
+
+.result-label {
+  color: #666;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.result-value {
+  color: #333;
+  font-size: 18px;
+  font-weight: 700;
+  font-family: 'Courier New', monospace;
+}
+
+.error-box {
+  margin-top: 20px;
+  padding: 12px;
+  background: #fee;
+  color: #c33;
+  border-radius: 6px;
+  border-left: 4px solid #c33;
+  font-size: 13px;
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 20px;
+  }
+
+  h1 {
+    font-size: 20px;
+  }
+
+  .radio-group {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .direction-group {
+    flex-direction: column;
+  }
+
+  .btn-group {
+    flex-direction: column;
+  }
+
+  button {
+    width: 100%;
+  }
+}
